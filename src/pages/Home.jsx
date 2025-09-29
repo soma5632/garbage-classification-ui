@@ -1,15 +1,40 @@
+import { useState } from "react";
+import UploadButtons from "../components/UploadButtons";
+
 export default function Home({ onNavigate }) {
+  const [preview, setPreview] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) setPreview(URL.createObjectURL(file));
+  };
+
   return (
     <div style={styles.container}>
+        {/* Headerから（未） */}
       <h2 style={styles.title}>今日のゴミ</h2>
       <div style={styles.todayBox}>カン・ビン</div>
 
+      {/* UploadButtonsから */}
       <div style={styles.buttonRow}>
-        <button style={styles.button} onClick={onNavigate}>カメラ</button>
-        <button style={styles.button} onClick={onNavigate}>アルバム</button>
+        <UploadButtons label="カメラ" capture="environment" onChange={handleFileChange} />
+        <UploadButtons label="アルバム" onChange={handleFileChange} />
       </div>
 
-      <button style={styles.footerButton}>自治体の選択・通知設定</button>
+      {/* これはHomeでやっちゃう */}
+      {preview && (
+        <div style={{ marginBottom: "20px" }}>
+          <img src={preview} alt="preview" style={{ maxWidth: "100%", borderRadius: "8px" }} />
+          <button style={styles.footerButton} onClick={onNavigate}>
+            判別する
+          </button>
+        </div>
+      )}
+
+      {/* FooterMenuから（未） */}
+      {!preview && (
+        <button style={styles.footerButton}>自治体の選択・通知設定</button>
+      )}
     </div>
   );
 }
@@ -23,9 +48,7 @@ const styles = {
     justifyContent: "space-between",
     textAlign: "center",
   },
-  title: {
-    marginBottom: "10px",
-  },
+  title: { marginBottom: "10px" },
   todayBox: {
     background: "#fff",
     padding: "15px",
@@ -39,14 +62,6 @@ const styles = {
     gap: "10px",
     marginBottom: "20px",
   },
-  button: {
-    flex: 1,
-    padding: "12px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    background: "#fff",
-    cursor: "pointer",
-  },
   footerButton: {
     padding: "15px",
     borderRadius: "6px",
@@ -56,5 +71,6 @@ const styles = {
     fontSize: "16px",
     cursor: "pointer",
     marginTop: "auto",
+    width: "100%",
   },
 };

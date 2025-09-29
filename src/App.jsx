@@ -22,14 +22,14 @@ function App() {
 const styles = {
   wrapper: {
     display: "flex",
-    justifyContent: "center", // 横方向中央
-    alignItems: "center",     // 縦方向中央
-    minHeight: "100vh",       // 全画面をカバー
-    background: "#f0f0f0",    // 外側の背景
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+    background: "#f0f0f0",
   },
   appContainer: {
     width: "100%",
-    maxWidth: "420px",        // スマホ幅を意識
+    maxWidth: "420px",
     minHeight: "90vh",
     background: "#fff",
     borderRadius: "12px",
