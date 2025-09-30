@@ -140,7 +140,7 @@ async def predict(file: UploadFile = File(...)):
     material, mat_conf, label_prompt = zero_shot_material(material_img)
 
     # 3) Dirty heuristic (placeholder)
-    dirty = estimate_dirty(material_img)
+    dirty = bool(estimate_dirty(material_img))
 
     # 4) Confidence gating
     # If material confidence is low, demote to other to avoid wrong category
@@ -162,4 +162,5 @@ async def predict(file: UploadFile = File(...)):
         "image_size": f"{width}x{height}",
         "category": category,
     }
+
     return result
