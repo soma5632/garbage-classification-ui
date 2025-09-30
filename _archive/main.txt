@@ -1,0 +1,106 @@
+import json
+from pathlib import Path
+from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
+import io
+import torch
+import torchvision.transforms as transforms
+import torchvision.models as models
+
+
+app = FastAPI()
+
+# CORS設定（フロントと接続）
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ① 分別ルールを読み込む（adachi.json）
+rules_path = Path(__file__).parent.parent / "src" / "rules" / "adachi.json"
+with open(rules_path, encoding="utf-8") as f:
+    rules = json.load(f)
+
+def classify(material: str, dirty: bool, shape: str = None) -> str:
+    for rule in rules:
+        if rule["material"] == material:
+            if "dirty" in rule and rule["dirty"] != dirty:
+                continue
+            if "shape" in rule and shape and rule["shape"] != shape:
+                continue
+            return rule["category"]
+    return "不明"
+
+# ② ResNet18モデルの準備
+model = models.resnet18(pretrained=True)
+model.eval()
+
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )
+])
+
+# ImageNetラベル一覧を読み込む
+with open("imagenet_classes.txt") as f:
+    idx_to_labels = [line.strip() for line in f.readlines()]
+
+# ③ ラベル → material / shape の変換辞書
+label_to_attributes = {
+    "pill bottle": {"material": "PET", "shape": "bottle"},
+    "water bottle": {"material": "PET", "shape": "bottle"},
+    "plastic bag": {"material": "plastic"},
+    "packet": {"material": "plastic"},
+    "paper towel": {"material": "paper"},
+    "envelope": {"material": "paper"},
+    "tin can": {"material": "metal", "shape": "can"},
+    "beer can": {"material": "metal", "shape": "can"},
+    "wine bottle": {"material": "glass", "shape": "bottle"},
+    "beer glass": {"material": "glass", "shape": "bottle"},
+}
+
+# ④ dirty判定（仮：False固定）
+def estimate_dirty():
+    return False  # 後でAI判定に差し替え可能
+
+# ⑤ APIエンドポイント
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
+    contents = await file.read()
+    image = Image.open(io.BytesIO(contents)).convert("RGB")
+    input_tensor = transform(image).unsqueeze(0)
+
+    with torch.no_grad():
+        outputs = model(input_tensor)
+        probs = torch.nn.functional.softmax(outputs, dim=1)[0]
+        confidence, predicted = torch.max(probs, 0)
+        label = idx_to_labels[predicted.item()]
+
+    # 属性変換
+    attrs = label_to_attributes.get(label, {"material": "other"})
+    material = attrs.get("material", "other")
+    shape = attrs.get("shape")
+
+    # dirty判定
+    dirty = estimate_dirty()
+
+    # 分別カテゴリ判定
+    category = classify(material, dirty, shape)
+
+    result = {
+        "material": material,
+        "shape": shape,
+        "dirty": dirty,
+        "confidence": float(confidence.item()),
+        "label": label,
+        "category": category
+    }
+    return JSONResponse(content=result)

@@ -1,0 +1,55 @@
+[
+  {
+    "material": "PET",
+    "dirty": false,
+    "shape": "bottle",
+    "category": "資源ごみ"
+  },
+  {
+    "material": "PET",
+    "dirty": true,
+    "category": "燃えるごみ"
+  },
+  {
+    "material": "plastic",
+    "dirty": false,
+    "category": "プラスチック容器包装"
+  },
+  {
+    "material": "plastic",
+    "dirty": true,
+    "category": "燃えるごみ"
+  },
+  {
+    "material": "paper",
+    "dirty": false,
+    "category": "資源ごみ"
+  },
+  {
+    "material": "paper",
+    "dirty": true,
+    "category": "燃えるごみ"
+  },
+  {
+    "material": "metal",
+    "shape": "can",
+    "category": "資源ごみ"
+  },
+  {
+    "material": "metal",
+    "category": "不燃ごみ"
+  },
+  {
+    "material": "glass",
+    "shape": "bottle",
+    "category": "資源ごみ"
+  },
+  {
+    "material": "glass",
+    "category": "不燃ごみ"
+  },
+  {
+    "material": "other",
+    "category": "燃えるごみ"
+  }
+]

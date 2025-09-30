@@ -4,15 +4,24 @@ import ResultPage from "./pages/ResultPage";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
+  const [aiResult, setAiResult] = useState(null);
 
   return (
     <div style={styles.wrapper}>
       <div style={styles.appContainer}>
         {currentPage === "home" && (
-          <Home onNavigate={() => setCurrentPage("result")} />
+          <Home
+            onResult={(result) => {
+              setAiResult(result);
+              setCurrentPage("result");
+            }}
+          />
         )}
         {currentPage === "result" && (
-          <ResultPage onBack={() => setCurrentPage("home")} />
+          <ResultPage
+            aiResult={aiResult}
+            onBack={() => setCurrentPage("home")}
+          />
         )}
       </div>
     </div>

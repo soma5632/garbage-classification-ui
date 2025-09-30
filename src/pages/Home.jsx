@@ -1,39 +1,65 @@
 import { useState } from "react";
 import UploadButtons from "../components/UploadButtons";
+import { predict } from "../services/api"; // ← api.js を経由して呼び出す
 
-export default function Home({ onNavigate }) {
+export default function Home({ onResult }) {
   const [preview, setPreview] = useState(null);
+  const [file, setFile] = useState(null);
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) setPreview(URL.createObjectURL(file));
+    const selected = e.target.files?.[0];
+    if (selected) {
+      setFile(selected);
+      setPreview(URL.createObjectURL(selected));
+    }
   };
+
+  const handleJudge = async () => {
+    if (!file) return;
+    try {
+        const result = await predict(file);   // ← バックエンド呼び出し
+        console.log("APIからの結果:", result); // ← デバッグ用に追加
+        onResult(result);
+    } catch (err) {
+        console.error("判定エラー:", err);
+    }
+  };
+
 
   return (
     <div style={styles.container}>
-        {/* Headerから（未） */}
       <h2 style={styles.title}>今日のゴミ</h2>
       <div style={styles.todayBox}>カン・ビン</div>
 
-      {/* UploadButtonsから */}
       <div style={styles.buttonRow}>
-        <UploadButtons label="カメラ" capture="environment" onChange={handleFileChange} />
-        <UploadButtons label="アルバム" onChange={handleFileChange} />
+        <UploadButtons
+          label="カメラ"
+          capture="environment"
+          onChange={handleFileChange}
+        />
+        <UploadButtons
+          label="アルバム"
+          onChange={handleFileChange}
+        />
       </div>
 
-      {/* これはHomeでやっちゃう */}
       {preview && (
         <div style={{ marginBottom: "20px" }}>
-          <img src={preview} alt="preview" style={{ maxWidth: "100%", borderRadius: "8px" }} />
-          <button style={styles.footerButton} onClick={onNavigate}>
+          <img
+            src={preview}
+            alt="preview"
+            style={{ maxWidth: "100%", borderRadius: "8px" }}
+          />
+          <button style={styles.footerButton} onClick={handleJudge}>
             判別する
           </button>
         </div>
       )}
 
-      {/* FooterMenuから（未） */}
       {!preview && (
-        <button style={styles.footerButton}>自治体の選択・通知設定</button>
+        <button style={styles.footerButton}>
+          自治体の選択・通知設定
+        </button>
       )}
     </div>
   );

@@ -1,11 +1,28 @@
-export default function ResultPage({ onBack }) {
+import { getCategory } from "../utils/getCategory";
+
+export default function ResultPage({ aiResult, onBack }) {
+  if (!aiResult) {
+    return (
+      <div style={styles.container}>
+        <p>判定結果がありません。</p>
+        <button style={styles.backButton} onClick={onBack}>
+          ← 戻る
+        </button>
+      </div>
+    );
+  }
+
+  const category = getCategory(aiResult);
+
   return (
     <div style={styles.container}>
       <h2 style={styles.title}>判別結果</h2>
 
       <div style={styles.resultBox}>
-        <p style={styles.resultText}>カン・ビン</p>
-        <p>信頼度: 80%</p>
+        <p style={styles.resultText}>{category}</p>
+        <p>材質: {aiResult.material}</p>
+        <p>形状: {aiResult.shape}</p>
+        <p>汚れ: {aiResult.dirty ? "あり" : "なし"}</p>
         <p>中身を空にして軽くすすぐ</p>
       </div>
 
